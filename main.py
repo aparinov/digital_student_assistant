@@ -7,8 +7,6 @@ from typing import Union
 from fastapi import Body, FastAPI
 from pydantic import BaseModel
 
-#user : Union[User, None] = None
-
 
 class User(BaseModel):
     login: str
@@ -34,31 +32,6 @@ connection = psycopg2.connect(user="dsa1",
 connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 cursor = connection.cursor()
 
-'''
-login = "tembubu"
-password = "12345"
-name = "Tembulat"
-surname = "Sokmyshev"
-interests = "Valorant"
-register_request = ''' '''
-insert into lucas_egor_agvan.users(login, password, name, surname, interests)
-values ('{}', '{}', '{}', '{}', '{}');
-''' '''.format(login, password, name, surname, interests)
-cursor.execute(register_request)
-'''
-'''
-name = "Project Assistant1"
-info = "Create app to search projects"
-manager_id = 2
-project_request = ''' '''
-insert into lucas_egor_agvan.projects(name, info, manager_id)
-values ('{}', '{}', '{}');
-''' '''.format(name, info, manager_id)
-cursor.execute(project_request)'''
-
-#users = {}
-#projects = {}
-
 
 @app.post("/auth/register")
 async def register_user(user: User):
@@ -67,8 +40,7 @@ async def register_user(user: User):
     values ('{}', '{}', '{}', '{}', '{}');
     '''.format(user.login, user.password, user.name, user.surname, user.interests)
     cursor.execute(register_request)
-    #users[user.login] = user
-    # return "Register Successful!\r\n"
+    return 'User added'
 
 
 @app.post("/project/create")
@@ -78,23 +50,11 @@ async def createProject(project: Project):
     values ('{}', '{}', {});
     '''.format(project.name, project.info, project.manager_id)
     cursor.execute(project_request)
-    #projects[project.name.lower()] = project
-    # return "Project was created successfully!"
+    return 'Project added'
 
 
 @app.get("/auth/login/{login}")
 async def login(login: str, password: Union[str, None] = None):
-    '''user = users.get(login)
-    print(users)
-    if user is None:
-        return "Login failed!\r\n"
-    else:
-        if password is None:
-            return "Password is None"
-        if user.password == password:
-            return "Login Successful!\r\n"
-        else:
-            return "Password failed! " + user.password + " " + password'''
     find_request = '''
     select exists (
         SELECT 1 FROM lucas_egor_agvan.users
@@ -104,147 +64,60 @@ async def login(login: str, password: Union[str, None] = None):
     cursor.execute(find_request)
     success_login = cursor.fetchall()
     if success_login[0][0]:
-        print('Login successful')
+        return 'Login successful'
     else:
-        print('Login failed')
-
-
-'''
-@app.get("/auth/login/{login}")
-async def login(login: str, password: Union[str, None] = None):
-    user = users.get(login)
-    print(users)
-    if user is None:
-        return "Login failed!\r\n"
-    else:
-        if password is None:
-            return "Password is None"
-        if user.password == password:
-            return "Login Successful!\r\n"
-        else:
-            return "Password failed! " + user.password + " " + password
-
-
-@app.post("/project/create")
-async def createProject(project: Project):
-    projects[project.name.lower()] = project
-    return "Project was created successfully!"
+        return 'Login failed'
 
 
 @app.get("/project/projects")
 async def getProjects():
-    return projects
+    project_request = '''
+    select * from lucas_egor_agvan.projects;
+    '''
+    cursor.execute(project_request)
+    return str(cursor.fetchall())
 
 
 @app.get("/project/{id}")
 async def getProject(id: str):
-    project = projects.get(id.lower())
-    if project is None:
-        return "No such project"
-    return project
-
-
-@app.get("/project/search/{notFullId}")
-async def getProjectSearch(notFullId: str):
-    currProjects = []
-    for pr in projects:
-        if notFullId.lower() in pr.lower():
-            currProjects.append(projects[pr])
-    if len(currProjects) == 0:
-        return "No such projects"
-    return currProjects
-
-
-@app.post("/project/update/{id}")
-async def updateProject(id: Union[str, None] = None, project: Union[Project, None] = None):
-    if id is None:
-        return "id is None"
-    id = id.lower()
-    if project is None:
-        return "projet is None"
-    projects[id].name = project.name.lower()
-    projects[id].info = project.info.lower()
-    return "Updated successfully!"
-
-
-@app.post("/project/update/{id}")
-async def updateProject(id: Union[str, None] = None, project: Union[Project, None] = None):
-    if id is None:
-        return "id is None"
-    id = id.lower()
-    if project is None:
-        return "projet is None"
-    projects[id].name = project.name.lower()
-    projects[id].info = project.info.lower()
-    return "Updated successfully!"
+    project_request = '''
+    select * from lucas_egor_agvan.projects where projects.project_id = '{}';
+    '''.format(id)
+    cursor.execute(project_request)
+    return str(cursor.fetchall())
 
 
 @app.delete("/project/delete/{id}")
 async def deleteProject(id: Union[str, None] = None):
-    return projects.pop(id.lower(), "Nothing deleted")
+    delete_request = '''
+    delete from lucas_egor_agvan.projects where projects.project_id = '{}';
+    '''.format(id)
+    cursor.execute(delete_request)
+    return 'Deleted'
 
 
-# class Image(BaseModel):
-#     url: str
-#     name: str
+@app.get("/project/search/{notFullName}")
+async def getProjectSearch(notFullName: str):
+    find_request = '''
+    select * from lucas_egor_agvan.projects where position('{}' in projects.name)>0;
+    '''.format(notFullName)
+    cursor.execute(find_request)
+    return str(cursor.fetchall())
 
 
-# class Item(BaseModel):
-#     name: str
-#     description: Union[str, None] = None
-#     price: float
-#     tax: Union[float, None] = None
-
-
-# @app.get("/items/")
-# async def read_item(item_id: Union[int, None] = None, item : Union[Item, None] = None):
-#     return items
-
-
-# @app.put("/items/{item_id}")
-# async def update_item(item_id: int, item: Item):
-#     item = {"item_id": item_id, **item.dict()}
-#     items[item_id] = item
-#     # results = {"item_id": item_id, "item": item}
-#     return item
-
-
-#     @app.put("/items/{item_id}")
-# async def update_item(
-#     *,
-#     item_id: int,
-#     item: Item = Body(
-#         examples={
-#             "normal": {
-#                 "summary": "A normal example",
-#                 "description": "A **normal** item works correctly.",
-#                 "value": {
-#                     "name": "Foo",
-#                     "description": "A very nice Item",
-#                     "price": 35.4,
-#                     "tax": 3.2,
-#                 },
-#             },
-#             "converted": {
-#                 "summary": "An example with converted data",
-#                 "description": "FastAPI can convert price `strings` to actual `numbers` automatically",
-#                 "value": {
-#                     "name": "Bar",
-#                     "price": "35.4",
-#                 },
-#             },
-#             "invalid": {
-#                 "summary": "Invalid data is rejected with an error",
-#                 "value": {
-#                     "name": "Baz",
-#                     "price": "thirty five point four",
-#                 },
-#             },
-#         },
-#     ),
-# ):
-#     item = {**item.dict()}
-#     items[item_id] = item
-#     # results = {"item_id": item_id, "item": item}
-#     return item
-'''
+@app.post("/project/update/{id}")
+async def updateProject(id: Union[str, None] = None, project: Union[Project, None] = None):
+    if id is None:
+        return "id is None"
+    id = id.lower()
+    if project is None:
+        return "No data to update"
+    update_request = '''
+    update lucas_egor_agvan.projects
+    set name = '{}',
+        info = '{}',
+        manager_id = {}
+    where project_id = {};
+    '''.format(project.name, project.info, project.manager_id, id)
+    cursor.execute(update_request)
+    return "Updated successfully!"
