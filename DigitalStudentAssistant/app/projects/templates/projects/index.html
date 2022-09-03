@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+Projects
+{% endblock %}
+
+{% block content %}
+<h1>Projects</h1>
+
+<table class="table table-borderless">
+  <thead>
+    <tr>
+      <th scope="col">Title</th>
+      <th scope="col">Link to the description</th>
+      <th scope="col">Type</th>
+      <th scope="col">Individual or Group</th>
+      <th scope="col">Current number of students</th>
+      <th scope="col">Maximum number of students</th>
+      <th scope="col">Name of the scientific supervisor</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+  {%for project in projects%}
+  <tr>
+    <td>{{project.title}}</td>
+    <td><p><a class="btn btn-outline-secondary" href="{{project.body}}" role="button">Link</a> </p></td>
+    {% if project.type == 'Software'%}
+    <td><span class="badge text-bg-info"> {{project.type}}</span></td>
+    {% else %}
+    <td><span class="badge text-bg-warning"> {{project.type}} </span></td>
+    {% endif %}
+    <td>{{project.view}}</td>
+    {% if project.current_number_of_students < project.max_students %}
+    <td><p class="text-success">{{project.current_number_of_students}}</p></td>
+    {% else %}
+    <td><p class="text-danger">Full</p></td>
+    {% endif %}
+    <td>{{project.max_students}}</td>
+    {%for user in project.users%}
+    {% if user.usertype == "Teacher"%}
+      <td>{{user.username}}</td>
+    {% endif %}
+    {% endfor %}
+    <td><a class="btn btn-primary" href="{{ url_for('projects.project_detail', title=project.title) }}" role="button">Info</a></td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+
+<nav aria-label="Page navigation example">
+  <ul class="pagination justify-content-center">
+    <li class="page-item disabled">
+      <a class="page-link">Previous</a>
+    </li>
+    <li class="page-item"><a class="page-link" href="#">1</a></li>
+    <li class="page-item"><a class="page-link" href="#">2</a></li>
+    <li class="page-item"><a class="page-link" href="#">3</a></li>
+    <li class="page-item">
+      <a class="page-link" href="#">Next</a>
+    </li>
+  </ul>
+</nav>
+{% endblock %}
+

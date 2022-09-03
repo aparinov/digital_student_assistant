@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {{project.title}}
+
+{% endblock %}
+
+{% block content %}
+  <h2>{{project.title}}</h2><br>
+  <p><a href={{project.body}} class="btn btn-light" role="button" data-bs-toggle="button">Link</a></p>
+   Project type:
+    {% if project.type == 'Software'%}
+    <span class="badge text-bg-info"> {{project.type}}</span>
+    {% else %}
+    <span class="badge text-bg-warning"> {{project.type}} </span>
+    {% endif %} <br>
+    {{ project.view }}<br>
+    Current number of students {{ project.current_number_of_students}} out of {{ project.max_students }}<br>
+  Current team:
+  <div class="users">
+    {% for user in users %}
+
+    <a class="text-decoration-none" href="{{ url_for('user', username=user.username) }}"> {{user.username}}</a>
+    {% if user.usertype == "Teacher"%}
+      <span class="badge rounded-pill text-bg-primary">{{user.usertype}}</span> <br>
+    {% else %}
+      <span class="badge rounded-pill text-bg-light">{{user.usertype}}</span> <br>
+    {% endif %}
+      {% endfor %}
+  </div>
+<br>
+<br>
+<br>
+
+<form method="post">
+  <input class="btn btn-light" type="submit" value="Apply" name="Apply"/>
+  <input class="btn btn-light" type="submit" value="Remove" name="Remove" />
+</form>
+
+<div class="container">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {# application content needs to be provided in the app_content block #}
+        {% block app_content %}{% endblock %}
+</div>
+{% endblock %}

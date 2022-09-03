@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table>
+        <tr valign="top">
+            <td><img src="{{ user.avatar(128) }}"></td>
+            <td>
+                <h1>{{ user.username }}</h1>
+                {%if user.usertype == "Teacher"%}
+                <h5><span class="badge rounded-pill text-bg-primary">{{user.usertype}}</span></h5>
+                {% else %}
+                <h5><span class="badge rounded-pill text-bg-light">{{user.usertype}}</span></h5>
+                {% endif %}
+                {% if user.email %}<p>{{ user.email }}</p>{% endif %}
+                About me:
+                {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %} <br>
+                Academic preferences:
+                {% if user.preferences %}<p>{{ user.preferences }}</p>{% endif %} <br>
+                {% if user == current_user %}
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-primary btn-sm" role="button" data-bs-toggle="button">Edit your profile</a>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <hr>
+
+<!--{% if user == current_user and current_user.usertype == "Teacher"%}-->
+<!--{% for project in projects%}-->
+<!--    {{project.title}}  <br>-->
+<!--    {%for user in project.users %}-->
+<!--        {{user.username}}-->
+<!--    <form method="post">-->
+<!--        <input type="submit" value="Apply" name="Apply"/>-->
+<!--        <input type="submit" value="Remove" name="Remove" />-->
+<!--    </form>-->
+<!--    {% endfor %}-->
+<!--{% endfor %}-->
+<!--{% endif %}-->
+
+<h5>Your projects:</h5> <br>
+{% for project in projects%}
+<div class="list-group">
+    <a href="{{ url_for('projects.project_detail', title=project.title) }}" class="list-group-item list-group-item-action">
+    <div class="d-flex w-100 justify-content-between">
+      <h5 class="mb-1">{{project.title}}</h5>
+      {% if project.type == 'Software'%}
+      <span class="badge text-bg-info"> {{project.type}}</span>
+      {% else %}
+      <span class="badge text-bg-warning"> {{project.type}} </span>
+      {% endif %}
+      <small class="text-muted">{{project.created}}</small>
+    </div>
+    <p class="mb-1">Current number of students: {{project.current_number_of_students}} / {{project.max_students}}
+    {% if project.current_number_of_students == project.max_students %}
+        <span class="badge text-bg-danger">Full</span>
+    {% endif %}
+    </p>
+    <small class="text-muted">{{project.view}}</small>
+  </a>
+</div>
+{% endfor %}
+
+
+{% if user == current_user and current_user.usertype == "Teacher"%}
+<a href="{{ url_for('add_project') }}" class="btn btn-light btn-sm d-grid" role="button" data-bs-toggle="button"><h6>Add Project</h6></a>
+{% endif %}
+
+
+
+{% endblock %}
